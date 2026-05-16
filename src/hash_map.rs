@@ -1,7 +1,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-const INITIAL_BUCKETS: usize = 16;
+const INITIAL_BUCKETS: usize = 256;
 
 pub struct HashMap<K> {
     buckets: Vec<Vec<(K, usize)>>,

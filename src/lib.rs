@@ -57,13 +57,5 @@ impl<K: Hash + Eq + Clone, V> LruCache<K, V> {
         self.map.insert(key, new_index);
     }
 
-    pub fn get_value(&self, index: usize) -> Option<&V> {
-        self.slots[index].as_ref().map(|node| &node.value)
-    }
 
-    pub fn set_value(&mut self, index: usize, value: V) {
-        if let Some(node) = self.slots[index].as_mut() {
-            node.value = value;
-        }
-    }
 }
