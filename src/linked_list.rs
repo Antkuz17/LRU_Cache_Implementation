@@ -48,4 +48,35 @@ impl<K, V> DoublyLinkedList<K, V> {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+
+    /// Inserts a node into the arena and returns its index
+    fn allocate_node(&mut self, node: Node<K, V>) -> usize {
+        if let Some(index) = self.free_list.pop() {
+            self.slots[index] = Some(node);
+            index
+        } else {
+            self.slots.push(Some(node));
+            self.slots.len() - 1
+        }
+    }
+
+    /// Adds a new node at the head of the list and returns its index
+    pub fn push_front(&mut self, key: K, value: V) -> usize {
+        let new_index = self.allocate_node(Node::new(key, value));
+
+        match self.head {
+            None => {
+                self.head = Some(new_index);
+                self.tail = Some(new_index);
+            }
+            Some(old_head_index) => {
+                self.slots[new_index].as_mut().unwrap().next = Some(old_head_index);
+                self.slots[old_head_index].as_mut().unwrap().prev = Some(new_index);
+                self.head = Some(new_index);
+            }
+        }
+
+        new_index
+    }
 }
