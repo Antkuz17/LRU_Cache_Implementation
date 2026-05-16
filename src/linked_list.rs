@@ -18,3 +18,34 @@ impl<K, V> Node<K, V> {
         }
     }
 }
+
+
+/// A doubly linked list backed by an arena (a Vec of slots).
+pub struct DoublyLinkedList<K, V> {
+    slots: Vec<Option<Node<K, V>>>,
+    head: Option<usize>,
+    tail: Option<usize>,
+    free_list: Vec<usize>,
+}
+
+impl<K, V> DoublyLinkedList<K, V> {
+    /// Creates a new, empty doubly linked list.
+    pub fn new() -> Self {
+        Self {
+            slots: Vec::new(),
+            head: None,
+            tail: None,
+            free_list: Vec::new(),
+        }
+    }
+
+    /// Returns the number of nodes currently in the list.
+    pub fn len(&self) -> usize {
+        self.slots.len() - self.free_list.len()
+    }
+
+    /// Returns true if the list contains no nodes.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
