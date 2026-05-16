@@ -79,4 +79,71 @@ impl<K, V> DoublyLinkedList<K, V> {
 
         new_index
     }
+
+    /// Removes the node at the tail of the list (least recently used).
+    pub fn pop_back(&mut self) -> Option<(K, V)> {
+        let tail_index = self.tail?;
+
+        // Take the node out of its slot. The slot now holds `None`.
+        let node = self.slots[tail_index].take().unwrap();
+
+        match node.prev {
+            None => {
+                self.head = None;
+                self.tail = None;
+            }
+            Some(new_tail_index) => {
+                self.slots[new_tail_index].as_mut().unwrap().next = None;
+                self.tail = Some(new_tail_index);
+            }
+        }
+
+        self.free_list.push(tail_index);
+
+        Some((node.key, node.value))
+    }
+
+    /// Moves the node at the given index to the head of the list
+    pub fn move_to_front(&mut self, index: usize) {
+        if self.head == Some(index) {
+            return;
+        }
+
+        let (prev, next) = {
+            let node = self.slots[index].as_ref().unwrap();
+            (node.prev, node.next)
+        };
+
+        match prev {
+            Some(prev_index) => {
+                self.slots[prev_index].as_mut().unwrap().next = next;
+            }
+            None => {
+                // No prev means this node was the head
+            }
+        }
+
+        // Unlink from the next neighbor.
+        match next {
+            Some(next_index) => {
+                self.slots[next_index].as_mut().unwrap().prev = prev;
+            }
+            None => {
+                // No next means this node was the tail
+                self.tail = prev;
+            }
+        }
+
+        // Re-insert at the head.
+        let old_head = self.head;
+        let node = self.slots[index].as_mut().unwrap();
+        node.prev = None;
+        node.next = old_head;
+
+        if let Some(old_head_index) = old_head {
+            self.slots[old_head_index].as_mut().unwrap().prev = Some(index);
+        }
+
+        self.head = Some(index);
+    }
 }
