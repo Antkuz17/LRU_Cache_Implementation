@@ -33,4 +33,37 @@ impl<K: Hash + Eq + Clone, V> LruCache<K, V> {
     pub fn capacity(&self) -> usize {
         self.capacity
     }
+
+    pub fn get(&mut self, key: &K) -> Option<&V> {
+        let index = self.map.get(key)?;
+        self.list.move_to_front(index);
+        self.list.get_value(index)
+    }
+
+    pub fn put(&mut self, key: K, value: V) {
+        if let Some(index) = self.map.get(&key) {
+            self.list.set_value(index, value);
+            self.list.move_to_front(index);
+            return;
+        }
+
+        if self.list.len() >= self.capacity {
+            if let Some((evicted_key, _)) = self.list.pop_back() {
+                self.map.remove(&evicted_key);
+            }
+        }
+
+        let new_index = self.list.push_front(key.clone(), value);
+        self.map.insert(key, new_index);
+    }
+
+    pub fn get_value(&self, index: usize) -> Option<&V> {
+        self.slots[index].as_ref().map(|node| &node.value)
+    }
+
+    pub fn set_value(&mut self, index: usize, value: V) {
+        if let Some(node) = self.slots[index].as_mut() {
+            node.value = value;
+        }
+    }
 }
