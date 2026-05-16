@@ -34,4 +34,50 @@ impl<K: Hash + Eq> HashMap<K> {
         key.hash(&mut hasher);
         (hasher.finish() as usize) % self.buckets.len()
     }
+
+
+    pub fn insert(&mut self, key: K, value: usize) -> Option<usize> {
+        let index = self.bucket_index(&key);
+        let bucket = &mut self.buckets[index];
+
+        for entry in bucket.iter_mut() {
+            if entry.0 == key {
+                let old = entry.1;
+                entry.1 = value;
+                return Some(old);
+            }
+        }
+
+        bucket.push((key, value));
+        self.size += 1;
+        None
+    }
+
+    pub fn get(&self, key: &K) -> Option<usize> {
+        let index = self.bucket_index(key);
+        let bucket = &self.buckets[index];
+
+        for entry in bucket.iter() {
+            if entry.0 == *key {
+                return Some(entry.1);
+            }
+        }
+
+        None
+    }
+
+    pub fn remove(&mut self, key: &K) -> Option<usize> {
+        let index = self.bucket_index(key);
+        let bucket = &mut self.buckets[index];
+
+        for i in 0..bucket.len() {
+            if bucket[i].0 == *key {
+                let (_, value) = bucket.swap_remove(i);
+                self.size -= 1;
+                return Some(value);
+            }
+        }
+
+        None
+    }
 }
